@@ -147,3 +147,24 @@ cd benchmark-observability
 | `production/` | Docker Compose: agent x2 + Nginx + Prometheus + Grafana + Jaeger + Locust, 4 alert rules |
 
 Hướng dẫn đầy đủ: [benchmark-observability/README.md](benchmark-observability/README.md). Nộp kèm `BENCHMARK_REPORT.md` theo [mẫu](benchmark-observability/BENCHMARK_REPORT_TEMPLATE.md).
+
+---
+
+## Ghi chú cho bản bài làm này
+
+**Chạy bằng Docker Compose (agent + Redis):**
+
+```bash
+cp .env.example .env          # rồi đặt AGENT_API_KEY=<key của bạn> trong .env
+docker compose up --build -d
+curl http://localhost:8000/health          # 200
+curl http://localhost:8000/ready           # 200 (503 nếu Redis chết)
+curl -X POST http://localhost:8000/ask -H "X-API-Key: <key>" \
+     -H "Content-Type: application/json" -d '{"question": "What is deployment?"}'
+```
+
+- `AGENT_API_KEY` **không có giá trị mặc định** trong code lẫn compose: chưa đặt thì mọi `/ask` trả 401.
+- Biến môi trường: `PORT`, `ENVIRONMENT`, `LOG_LEVEL`, `AGENT_API_KEY`, `REDIS_URL`, `RATE_LIMIT_PER_MINUTE` (mặc định 10), `DAILY_BUDGET_USD` (1.0), `MONTHLY_BUDGET_USD` (10.0), `WEB_CONCURRENCY` (số uvicorn worker trong Docker, mặc định 2).
+- Mã lỗi của `/ask`: 401 (thiếu/sai key), 422 (body sai, có field + message), 429 (vượt rate limit, kèm `Retry-After`), 402 (hết budget ngày/tháng), 503 (Redis không kết nối được).
+- Giữ `WEB_CONCURRENCY` ≥ 2: uvicorn 0.30 chạy 1 worker vẫn tắt êm khi nhận SIGTERM nhưng thoát với exit code 143 thay vì 0.
+- Trên Windows, chạy `check_production_ready.py` trong WSL2 (`os.name == "posix"`) để kiểm tra được graceful shutdown.
