@@ -230,7 +230,21 @@ Response đi qua nginx (header `Server: nginx` và các security header do nginx
 
 ### Exercise 3.1 / 3.2: Deploy agent Part 6
 
-<!-- DEPLOY_RESULT -->
+- **Nền tảng chính: Railway** (Exercise 3.1). Deploy thư mục `06-lab-complete/` từ GitHub repo (Root Directory = `06-lab-complete`, build bằng Dockerfile theo `railway.toml`), thêm **Railway Redis** và đặt `REDIS_URL=${{Redis.REDIS_URL}}`, `AGENT_API_KEY` trong Variables.
+- **URL:** https://k5-l3a-day14-hoanglamminh-2a202603566-deployment-production.up.railway.app
+
+```text
+GET  /health                 → 200 {"status":"ok","version":"1.0.0","environment":"production",...}
+GET  /ready                  → 200 {"ready":true}          # kết nối được Redis trên Railway
+POST /ask (không key)        → 401
+POST /ask (sai key)          → 401
+POST /ask (đúng key)         → 200   (xem DEPLOYMENT.md, screenshots/test.png)
+check_production_ready.py --public-url <URL> → PASS 12/12 · 44/44 checks
+```
+
+- Lần build đầu lỗi vì Railway build `Dockerfile` ở gốc repo (ví dụ Go của Part 2); đặt Root Directory = `06-lab-complete` thì build đúng.
+- Ảnh: `screenshots/dashboard.png`, `screenshots/running.png`, `screenshots/test.png`.
+- **Nền tảng còn lại (Render):** không deploy thêm, thay bằng phần so sánh `railway.toml` / `render.yaml` bên dưới. `06-lab-complete/render.yaml` vẫn viết đầy đủ (web service Docker + Key Value Redis, `AGENT_API_KEY` dùng `generateValue`).
 Chi tiết URL, lệnh test và biến môi trường: [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ### So sánh `railway.toml` và `render.yaml`
