@@ -1,0 +1,35 @@
+{
+  "purpose": "Chẩn đoán concurrency=100: so sánh latency phía client (load_test.py) với latency do chính agent đo (field ms trong log JSON, middleware observe_requests)",
+  "run_window_utc": {
+    "start": "2026-11-25T10:45:41Z",
+    "end": "2026-11-25T10:45:47Z"
+  },
+  "client_report": "reports/diag_c100_client.json",
+  "client_latency_ms": {
+    "min": 197.1,
+    "avg": 1067.6,
+    "p50": 386.3,
+    "p90": 2755.5,
+    "p95": 3356.3,
+    "p99": 3664.6,
+    "max": 4277.7
+  },
+  "server_side_latency_ms": {
+    "source": "agent log: event=http_request, route=/ask, status=200",
+    "n": 297,
+    "min": 152.3,
+    "p50": 193.9,
+    "p90": 223.6,
+    "p95": 232.2,
+    "p99": 1690.5,
+    "max": 1746.5,
+    "avg": 230.0
+  },
+  "kernel_tcp_counters_during_run": {
+    "TcpExtListenOverflows": 0,
+    "TcpExtListenDrops": 0,
+    "TcpExtTCPSynRetrans": 0
+  },
+  "net.core.somaxconn": 4096,
+  "agent_listen_backlog": 2048
+}
